@@ -57,72 +57,169 @@ htmlcov/
 .ipynb_checkpoints
 *.ipynb
 
-# Image and Video Files
+# ============================================
+# IMAGE FILES - All Formats
+# ============================================
 *.jpg
 *.jpeg
+*.JPG
+*.JPEG
 *.png
+*.PNG
 *.gif
+*.GIF
 *.bmp
+*.BMP
 *.tiff
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.flv
-*.wmv
+*.tif
+*.TIF
+*.webp
+*.WEBP
+*.ico
+*.svg
+*.raw
+*.psd
 
-# Project-specific
+# ============================================
+# VIDEO FILES - All Formats
+# ============================================
+*.mp4
+*.MP4
+*.avi
+*.AVI
+*.mov
+*.MOV
+*.mkv
+*.MKV
+*.flv
+*.FLV
+*.wmv
+*.WMV
+*.webm
+*.WEBM
+*.m4v
+*.m4a
+*.3gp
+*.m2ts
+
+# ============================================
+# GENERATED OUTPUT FILES
+# ============================================
+output_videos/
+output_videos/*
+detected_faces/
+detected_faces/*
+results/
+results/*
+frames/
+frames/*
+exports/
+exports/*
+temp_output/
+temp_output/*
+
+# ============================================
+# TRAINED MODELS & WEIGHTS
+# ============================================
 trained_models/*
 !trained_models/.gitkeep
-output_videos/
-detected_faces/
-calibration_data/
+models/*.h5
+models/*.pb
+models/*.pth
+models/*.pt
+models/*.onnx
+models/*.xml
+models/*.cfg
+models/*.weights
 *.h5
 *.pb
 *.xml
 *.pth
+*.pt
 *.onnx
+weights/
+weights/*
+checkpoints/
+checkpoints/*
 
-# Logs
+# ============================================
+# CAMERA CALIBRATION DATA
+# ============================================
+calibration_data/
+calibration_data/*
+calibration/*.pkl
+calibration/*.yaml
+camera_calib.yml
+calibration_matrices/
+calibration_matrices/*
+
+# ============================================
+# LOGS & REPORTS
+# ============================================
 *.log
 logs/
+logs/*
+*.txt
+reports/
+reports/*
+debug/
+debug/*
 
-# System
+# ============================================
+# SYSTEM & ENVIRONMENT
+# ============================================
 .env
 .env.local
 config_local.yaml
 *.pid
+.env.*
+!.env.example
 
-# Camera calibration data
-calibration/*.pkl
-camera_calib.yml
-
-# Temporary files
+# ============================================
+# TEMPORARY & CACHE FILES
+# ============================================
 *.tmp
 *.temp
 .tmp/
+.tmp/*
+*.cache
+cache/
+cache/*
+__pycache__/
 
-# OS
+# ============================================
+# OS SPECIFIC
+# ============================================
 Thumbs.db
 .DS_Store
 *.bak
 *.backup
+.~*
 
-# Git
-.git/
-.gitignore
-
-# Editor temporary files
+# ============================================
+# EDITOR TEMPORARY FILES
+# ============================================
 *.swn
 *.orig
 *#
+*.swo
+.#*
 
-# Performance profiling
+# ============================================
+# PERFORMANCE PROFILING
+# ============================================
 *.prof
 prof_output/
+prof_output/*
+*.cProfile
 
-# Data and models
+# ============================================
+# DATA DIRECTORIES
+# ============================================
 data/
-models/*.pt
-models/*.pth
-checkpoints/
+data/*
+dataset/
+dataset/*
+
+# Keep directory structures with .gitkeep
+!*/.gitkeep
