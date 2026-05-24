@@ -1,260 +1,164 @@
 # Camera MIPI RaspberryPi4 Face Detection
 
-A Python-based face detection system using MIPI CSI camera modules connected to Raspberry Pi 4. This project leverages real-time computer vision to detect and track faces using optimized deep learning models suitable for embedded systems.
+A C++ face detection system using MIPI CSI camera modules connected to Raspberry Pi 4, powered by OpenCV DNN with a Caffe SSD model for real-time face detection on embedded hardware.
 
 ## Features
 
-- 🎥 **Real-time Face Detection** - Using MIPI CSI camera interface
-- 🚀 **Optimized for Raspberry Pi 4** - Lightweight models for efficient processing
-- 📹 **Video Recording** - Capture detected faces with bounding boxes
-- 🔍 **Multiple Detection Models** - Support for various face detection backends
-- 📊 **Performance Monitoring** - FPS tracking and latency metrics
-- 🛠️ **Easy Configuration** - Simple config-based setup
+- Real-time face detection using OpenCV DNN (SSD Caffe model)
+- MIPI CSI camera support via V4L2 / GStreamer
+- Optimized for Raspberry Pi 4 (ARM64)
+- Confidence-based filtering with bounding boxes and labels
+- Camera device auto-discovery utility included
+- Lightweight and efficient — no Python runtime overhead
 
 ## Prerequisites
 
-### Hardware Requirements
+### Hardware
 
 - Raspberry Pi 4 (2GB RAM minimum, 4GB+ recommended)
-- MIPI CSI Camera Module (v2 or v3)
+- MIPI CSI Camera Module (OV5647 or compatible)
 - 5V 3A Power Supply
-- MicroSD Card (32GB+ recommended)
-- Optional: Heat sink for Raspberry Pi
 
-### Software Requirements
+### Software
 
-- Raspberry Pi OS (Bullseye or later)
-- Python 3.8+
-- libatlas-base-dev
-- libjasper-dev
-- libtiff5
-- libjasper1
-- libharfbuzz0b
-- libwebp6
+- Raspberry Pi OS (Bullseye/Bookworm, 64-bit recommended)
+- OpenCV 4.x with DNN module (compiled with V4L2 and GStreamer support)
+- C++17 compiler (g++)
 
-## Installation
-
-### 1. Enable Camera Interface
-
-```bash
-sudo raspi-config
-# Navigate to Interface Options -> Camera -> Enable
-# Select Yes and reboot
-```
-
-### 2. Install System Dependencies
+### Install OpenCV on Raspberry Pi
 
 ```bash
 sudo apt-get update
-sudo apt-get upgrade -y
 sudo apt-get install -y \
-    libatlas-base-dev \
-    libjasper-dev \
-    libtiff5 \
-    libjasper1 \
-    libharfbuzz0b \
-    libwebp6 \
-    python3-pip \
-    python3-dev \
-    git
-```
-
-### 3. Clone Repository
-
-```bash
-git clone https://github.com/aaabdelaziz/Camera_MIPI_RaspberryPi4.git
-cd Camera_MIPI_RaspberryPi4
-```
-
-### 4. Create Virtual Environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 5. Install Python Dependencies
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-## Usage
-
-### Basic Face Detection
-
-```bash
-python detect_faces.py
-```
-
-### Run with Configuration File
-
-```bash
-python detect_faces.py --config config.yaml
-```
-
-### Record Video with Detected Faces
-
-```bash
-python detect_faces.py --output video --output_path ./detected_faces.mp4
-```
-
-### Command Line Options
-
-```
---config CONFIG           Path to configuration file (default: config.yaml)
---model MODEL            Face detection model (default: cascade)
-                        Options: cascade, ssd, yolov3
---confidence CONF        Confidence threshold (default: 0.5)
---output OUTPUT          Output mode (default: display)
-                        Options: display, video, none
---output_path PATH       Path to save output video
---fps FPS                Target FPS (default: 30)
---width WIDTH            Frame width (default: 640)
---height HEIGHT          Frame height (default: 480)
---display                Show detection on screen (requires X11)
+    build-essential \
+    cmake \
+    pkg-config \
+    libopencv-dev \
+    gstreamer1.0-tools \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev
 ```
 
 ## Project Structure
 
 ```
 Camera_MIPI_RaspberryPi4/
-├── detect_faces.py           # Main detection script
-├── config.yaml               # Configuration file
-├── requirements.txt          # Python dependencies
-├── src/
-│   ├── camera.py            # Camera interface
-│   ├── detector.py          # Face detection logic
-│   ├── models/              # Pre-trained models
-│   └── utils.py             # Utility functions
-├── trained_models/          # Downloaded models directory
-├── output_videos/           # Output video directory
-├── detected_faces/          # Detected faces storage
-├── calibration/             # Camera calibration data
-└── README.md                # This file
+├── main.cpp                                  # Face detection program (OpenCV DNN + Caffe SSD)
+├── camera_test.cpp                           # Camera device test & auto-discovery utility
+├── deploy.prototxt                           # Caffe model architecture definition
+├── res10_300x300_ssd_iter_140000.caffemodel  # Pre-trained SSD face detection weights
+├── camera_test                               # Compiled ARM64 binary (camera test)
+├── face_detect                               # Compiled ARM64 binary (face detection)
+└── README.md                                 # This file
 ```
 
-## Configuration
+## Build
 
-Edit `config.yaml` to customize:
+Compile both programs with OpenCV:
 
-```yaml
-# Camera settings
-camera:
-  resolution: [640, 480]
-  framerate: 30
-  rotation: 0
+```bash
+# Camera test utility
+g++ -O2 camera_test.cpp -o camera_test $(pkg-config --cflags --libs opencv4)
 
-# Detection settings
-detection:
-  model: "cascade"
-  confidence_threshold: 0.5
-  
-# Output settings
-output:
-  save_video: true
-  save_faces: false
-  display: false
+# Face detection program
+g++ -O2 main.cpp -o face_detect $(pkg-config --cflags --libs opencv4)
 ```
 
-## Supported Models
+## Usage
 
-| Model | Speed | Accuracy | Memory | Notes |
-|-------|-------|----------|--------|-------|
-| Cascade Classifier | ⚡⚡⚡ | ⭐⭐⭐ | Low | Fast, good for real-time |
-| SSD MobileNet | ⚡⚡ | ⭐⭐⭐⭐ | Medium | Balanced performance |
-| YOLOv3 Tiny | ⚡⚡ | ⭐⭐⭐⭐ | Medium | High accuracy |
+### 1. Test Camera Connection
 
-## API Reference
+Run the camera test to discover which video device is active:
 
-### Camera Class
-
-```python
-from src.camera import Camera
-
-camera = Camera(resolution=(640, 480), framerate=30)
-frame = camera.read()
-camera.release()
+```bash
+./camera_test
 ```
 
-### Detector Class
+This scans `/dev/video0` through `/dev/video3` and saves a snapshot from the first working camera. If all fail, check your camera connection:
 
-```python
-from src.detector import FaceDetector
+```bash
+# List available video devices
+ls /dev/video*
 
-detector = FaceDetector(model="cascade")
-faces = detector.detect(frame)
+# Check camera detection
+vcgencmd get_camera
 ```
 
-## Performance Tips
+### 2. Run Face Detection
 
-1. **Resolution Trade-off**: Lower resolution = faster processing (try 320x240 for weak systems)
-2. **Model Selection**: Use Cascade Classifier for maximum speed
-3. **Threading**: Enable multi-threading for camera reading
-4. **CPU Tuning**: Consider overclocking carefully
-5. **Cooling**: Ensure proper heat dissipation
+```bash
+./face_detect
+```
+
+The program:
+- Scans `/dev/video10`–`/dev/video21` for a working camera (GStreamer pipeline first, then native V4L2 fallback)
+- Loads the Caffe SSD face detection model (`deploy.prototxt` + `res10_300x300_ssd_iter_140000.caffemodel`)
+- Displays a live feed with detected faces highlighted and confidence percentages
+- Press any key in the display window to exit
+
+## How It Works
+
+### Face Detection Model
+
+- **Architecture**: SSD (Single Shot MultiBox Detector)
+- **Backend**: Caffe (loaded via OpenCV DNN `readNetFromCaffe`)
+- **Input**: 300×300 RGB blob
+- **Mean Subtraction**: (104.0, 177.0, 123.0)
+- **Confidence Threshold**: 0.5 (50%)
+- **Output**: Bounding boxes with confidence scores per detected face
+
+### Camera Pipeline
+
+The programs use V4L2 for camera access:
+- `camera_test.cpp` — uses OpenCV's native `CAP_V4L2` backend, MJPG format at 640×480, 30fps
+- `main.cpp` — tries GStreamer pipelines first for each `/dev/video` device, falls back to native OpenCV backend
 
 ## Troubleshooting
 
-### Camera Not Detected
+### Camera Not Found
 
 ```bash
-# Check camera connection
-vcgencmd get_camera
+# Check available devices
+ls /dev/video*
 
-# Test camera
-raspistill -o test.jpg
+# Test camera with v4l2-ctl
+v4l2-ctl --list-formats-ext
 ```
 
-### Low FPS Performance
+### Model Not Loading
 
-- Reduce frame resolution
-- Switch to faster model (Cascade)
-- Disable display output
-- Lower confidence threshold
+Ensure the model files are in the same directory as the executable:
+```bash
+ls -l deploy.prototxt res10_300x300_ssd_iter_140000.caffemodel
+```
 
-### Memory Issues
+### Missing GStreamer Support
 
-- Reduce frame buffer size
-- Lower resolution
-- Use lighter model
+If GStreamer pipelines fail, OpenCV falls back to native V4L2. For GStreamer support, rebuild OpenCV with:
+```bash
+cmake -D WITH_GSTREAMER=ON ..
+```
 
-## Contributing
+### No Display / Headless Mode
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+For headless operation, use a virtual display:
+```bash
+export DISPLAY=:0
+# or
+xvfb-run ./face_detect
+```
 
 ## References
 
-- [Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/)
-- [OpenCV Face Detection](https://docs.opencv.org/4.x/df/d2d/group__objdetect__cascades.html)
-- [MIPI CSI Camera](https://www.raspberrypi.com/documentation/accessories/camera.html)
+- [OpenCV DNN Face Detection](https://github.com/opencv/opencv/tree/master/samples/dnn/face_detector)
+- [Raspberry Pi Camera Documentation](https://www.raspberrypi.com/documentation/accessories/camera.html)
+- [V4L2 Documentation](https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/v4l2.html)
 
-## Acknowledgments
+## License
 
-- Raspberry Pi Foundation for excellent documentation
-- OpenCV community for powerful computer vision tools
-- Contributors and testers
-
-## Support
-
-For issues, questions, or suggestions:
-
-- 📧 Open an issue on GitHub
-- 💬 Start a discussion
-- 📝 Check existing issues first
+MIT License
 
 ---
 
-**Last Updated:** May 24, 2026  
+**Last Updated:** May 25, 2026  
 **Maintainer:** [@aaabdelaziz](https://github.com/aaabdelaziz)
